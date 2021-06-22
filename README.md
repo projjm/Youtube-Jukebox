@@ -1,5 +1,3 @@
-# Note: The Youtube searching library has stopped working, please wait until I fix this before attempting to use the app.
-
 ![alt text](https://i.imgur.com/mRdw746.png "Youtube Jukebox Logo")
 # Youtube Jukebox
 A simple standalone app to listen to music in sync with your friends via Youtube.
