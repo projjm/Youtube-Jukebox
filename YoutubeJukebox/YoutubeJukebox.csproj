@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject />
+    <AssemblyName>YoutubeJukebox</AssemblyName>
+    <RootNamespace>YoutubeJukebox</RootNamespace>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Config.Net" Version="4.15.0" />
+    <PackageReference Include="NAudio" Version="2.0.0" />
+    <PackageReference Include="ProjjSerializer" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="res\icon.ico" />
+    <Resource Include="res\icon.png" />
+    <Resource Include="src\WPF\icon.png" />
+    <Resource Include="src\WPF\muted.png" />
+    <Resource Include="src\WPF\unmuted.png" />
+  </ItemGroup>
+
+</Project>
