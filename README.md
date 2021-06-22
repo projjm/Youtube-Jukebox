@@ -1,6 +1,6 @@
 ![alt text](https://i.imgur.com/mRdw746.png "Youtube Jukebox Logo")
 # Youtube Jukebox
-A simple standalone app to listen to music in realtime with your friends via Youtube.
+A simple standalone app to listen to music in sync with your friends via Youtube.
 
 ![alt text](https://i.imgur.com/A5iqojH.png "Youtube Jukebox Screenshot")
 
