@@ -14,6 +14,9 @@ using YouTubeSearch;
 using Newtonsoft;
 using Newtonsoft.Json;
 using ByteSizeLib;
+using System.Reflection;
+using System.Threading;
+using YoutubeExplode.Videos.Streams;
 
 namespace YoutubeJukeboxServer
 {
@@ -47,15 +50,17 @@ namespace YoutubeJukeboxServer
         private const string CacheFileName = "CacheMetadata.json";
         private readonly int MaxCacheSizeMb;
         private readonly int SongMaxDurationMinutes;
+        private readonly int RequestTimeoutMs;
 
         private int _totalSongsQueued;
 
         YoutubeClient _youtube = new YoutubeClient();
 
-        public YoutubeAudioFetcher(int maxCacheSizeMb, int songMaxDurationMinutes)
+        public YoutubeAudioFetcher(int maxCacheSizeMb, int songMaxDurationMinutes, int requestTimeout)
         {
             MaxCacheSizeMb = maxCacheSizeMb;
             SongMaxDurationMinutes = songMaxDurationMinutes;
+            RequestTimeoutMs = requestTimeout;
 
             if (!_mediaFoundationStarted)
             {
@@ -177,9 +182,21 @@ namespace YoutubeJukeboxServer
                 Console.WriteLine("Audio cached. Downloading metadata...");
 
             SongData songData = new SongData();
-            var streamManifest = await _youtube.Videos.Streams.GetManifestAsync(videoId);
-            var streamMetaData = await _youtube.Videos.GetAsync(videoId);
-            var streamInfo = streamManifest.GetAudioOnlyStreams().OrderByDescending(s => s.Bitrate).First();
+            StreamManifest streamManifest;
+            Video streamMetaData;
+            AudioOnlyStreamInfo streamInfo;
+
+            try
+            {
+                streamManifest = await TimeoutAfter(_youtube.Videos.Streams.GetManifestAsync(videoId), RequestTimeoutMs);
+                streamMetaData = await TimeoutAfter(_youtube.Videos.GetAsync(videoId), RequestTimeoutMs);
+                streamInfo = streamManifest.GetAudioOnlyStreams().OrderByDescending(s => s.Bitrate).First();
+            }
+            catch (TimeoutException)
+            {
+                songData.queueId = -1;
+                return songData;
+            }
 
             if (SongMaxDurationMinutes > 0 && streamMetaData.Duration.Value.TotalMinutes > SongMaxDurationMinutes)
             {
@@ -197,14 +214,33 @@ namespace YoutubeJukeboxServer
             if (songDataOnly)
                 return songData;
 
-            await _youtube.Videos.Streams.DownloadAsync(streamInfo, DownloadPath + videoId + '.' + streamInfo.Container);
+            try
+            {
+                await TimeoutAfter(
+                    _youtube.Videos.Streams.DownloadAsync(streamInfo, DownloadPath + videoId + '.' + streamInfo.Container),
+                    RequestTimeoutMs);
+            }
+            catch
+            {
+                if (File.Exists(DownloadPath + videoId + '.' + streamInfo.Container))
+                    File.Delete(DownloadPath + videoId + '.' + streamInfo.Container);
 
+                songData.queueId = -1;
+                return songData;
+            }
+           
             var audioFile = new MediaFoundationReader(DownloadPath + videoId + '.' + streamInfo.Container);
             MediaFoundationEncoder.EncodeToMp3(audioFile, ConvertPath + videoId + ".mp3", 44100);
             audioFile.Dispose();
 
             UpdateCache(videoId, streamInfo.Container.Name);
             return songData;
+        }
+
+        private void CancellationTimeout(CancellationTokenSource tokenSource, int timeoutMs)
+        {
+            Thread.Sleep(timeoutMs);
+            tokenSource.Cancel();
         }
 
         private void UpdateCache(string videoId, string container)
@@ -256,5 +292,58 @@ namespace YoutubeJukeboxServer
             File.WriteAllText(ConvertPath + CacheFileName, json);
         }
 
+        public async ValueTask<TResult> TimeoutAfter<TResult>(ValueTask<TResult> valueTask, int timeoutMs)
+        {
+            TimeSpan timeout;
+            if (timeoutMs != -1)
+                timeout = new TimeSpan(0, 0, 0, 0, timeoutMs);
+            else
+                timeout = new TimeSpan(1, 0, 0, 0, 0);
+
+            Task<TResult> task = valueTask.AsTask();
+            using (var timeoutCancellationTokenSource = new CancellationTokenSource())
+            {
+                var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
+                if (completedTask == task)
+                {
+                    if (task.IsCanceled || task.IsFaulted)
+                        throw new TimeoutException("The operation has timed out.");
+
+                    timeoutCancellationTokenSource.Cancel();
+                    return await task;
+                }
+                else
+                {
+                    throw new TimeoutException("The operation has timed out.");
+                }
+            }
+        }
+
+        public async ValueTask TimeoutAfter(ValueTask valueTask, int timeoutMs)
+        {
+            TimeSpan timeout;
+            if (timeoutMs != -1)
+                timeout = new TimeSpan(0, 0, 0, 0, timeoutMs);
+            else
+                timeout = new TimeSpan(1, 0, 0, 0, 0);
+
+            Task task = valueTask.AsTask();
+            using (var timeoutCancellationTokenSource = new CancellationTokenSource())
+            {
+                var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
+                if (completedTask == task)
+                {
+                    if (task.IsCanceled || task.IsFaulted)
+                        throw new TimeoutException("The operation has timed out.");
+
+                    timeoutCancellationTokenSource.Cancel();
+                    return;
+                }
+                else
+                {
+                    throw new TimeoutException("The operation has timed out.");
+                }
+            }
+        }
     }
 }

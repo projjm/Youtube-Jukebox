@@ -25,6 +25,9 @@ namespace YoutubeJukeboxServer
         [Option(DefaultValue = -2)]
         public int MaxQueueSize { get; set; }
 
+        [Option(DefaultValue = -2)]
+        public int RequestTimeoutMs { get; set; }
+
         [Option(DefaultValue = "/")]
         public string ServerPassword { get; set; }
     }
@@ -53,6 +56,9 @@ namespace YoutubeJukeboxServer
 
             if (settings.MaxSongDurationMinutes == 0)
                 settings.MaxSongDurationMinutes = -1;
+
+            if (settings.RequestTimeoutMs == -2)
+                settings.RequestTimeoutMs = 60000;
         }
     }
 }

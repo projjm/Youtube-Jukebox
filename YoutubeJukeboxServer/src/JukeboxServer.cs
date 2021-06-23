@@ -66,10 +66,10 @@ namespace YoutubeJukeboxServer
         private readonly int _bufferDurationMs;
         private readonly int _maxQueueSize;
 
-        public JukeboxServer(ServerNetHandler netHandler, int bufferTimeMs, int maxQueueSize, int maxCacheSizeMb, int maxSongDurationSeconds)
+        public JukeboxServer(ServerNetHandler netHandler, int bufferTimeMs, int maxQueueSize, int maxCacheSizeMb, int maxSongDurationSeconds, int requestTimeoutMs)
         {
             _netHandler = netHandler;
-            _audioFetcher = new YoutubeAudioFetcher(maxCacheSizeMb, maxSongDurationSeconds);
+            _audioFetcher = new YoutubeAudioFetcher(maxCacheSizeMb, maxSongDurationSeconds, requestTimeoutMs);
             _bufferDurationMs = bufferTimeMs;
             _maxQueueSize = maxQueueSize;
 
@@ -182,7 +182,7 @@ namespace YoutubeJukeboxServer
 
                 if (songData.queueId == -1)
                 {
-                    Console.WriteLine("Failed to queue song. Duration is too long.");
+                    Console.WriteLine("Failed to queue song.");
                     return;
                 }
 

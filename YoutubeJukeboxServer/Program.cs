@@ -16,7 +16,7 @@ namespace YoutubeJukeboxServer
             ConfigHelper.TryWriteDefaults(_config);
 
             ServerNetHandler netHandler = new ServerNetHandler(_config.IPAddress, _config.Port, _config.ServerPassword);
-            JukeboxServer ytRadioServer = new JukeboxServer(netHandler, _config.BufferTimeMS, _config.MaxQueueSize, _config.MaxCacheSizeMb, _config.MaxSongDurationMinutes);
+            JukeboxServer ytRadioServer = new JukeboxServer(netHandler, _config.BufferTimeMS, _config.MaxQueueSize, _config.MaxCacheSizeMb, _config.MaxSongDurationMinutes, _config.RequestTimeoutMs);
 
             // Block application exit - is there a better way to do this?
             while(true)
