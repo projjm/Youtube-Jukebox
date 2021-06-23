@@ -28,9 +28,10 @@ The server application has a number of config options, these can be found in the
 **Key : Default Value**
 * **IPAddress=127.0.0.1**   - The IP address to use when hosting the server.
 * **Port=525**              - The port to use when hosting the server.
-* **BufferTimeMS=4000** - The amount of time in seconds to buffer ahead of the current stream position.
+* **BufferTimeMS=4000** - The amount of time in ms to buffer ahead of the current stream position.
 * **MaxQueueSize=-1** - Max number of songs in the queue (-1 means no maximum)
 * **ServerPassword=** - Server password, leave blank to use no password.
 * **MaxCacheSizeMb=-1** - Max cache directory size in Mb (-1 means no maximum)
 * **MaxSongDurationMinutes=-1** - Max song duration to be queued (-1 means no maximum)
+* **RequestTimeoutMs=60000** - Maximum time in ms to wait for data requests (-1 means no maximum)
 
