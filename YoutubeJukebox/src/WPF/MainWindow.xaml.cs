@@ -179,8 +179,15 @@ namespace YoutubeJukebox
 
                     bool isCurrentSong = song.queueId == _songDataHandler.GetCurrentSongPlaying().queueId;
 
-                    songListing.songName.Text = song.title;
-                    songListing.songTime.Text = GetFormattedTime(song.durationMinutes.ToString(), song.durationSeconds.ToString());
+                    if (song.hiddenRequested)
+                        songListing.songName.Text = "???";
+                    else
+                        songListing.songName.Text = song.title;
+
+                    if (song.hiddenRequested)
+                        songListing.songTime.Text = "???";
+                    else
+                        songListing.songTime.Text = GetFormattedTime(song.durationMinutes.ToString(), song.durationSeconds.ToString());
 
                     if (isCurrentSong)
                     {
@@ -238,9 +245,14 @@ namespace YoutubeJukebox
                 string durationMins = songPlaying.durationMinutes.ToString();
                 string durationSecs = (songPlaying.durationSeconds > 0) ? (songPlaying.durationSeconds - 1).ToString() : songPlaying.durationSeconds.ToString();
 
-                songInfoText.Text = "Playing: " + songPlaying.title;
+                if (songPlaying.hiddenRequested)
+                    songInfoText.Text = "Playing: ???";
+                else
+                    songInfoText.Text = "Playing: " + songPlaying.title;
 
-                if (hasHours)
+                if (songPlaying.hiddenRequested)
+                    songDurationEnd.Text = "???";
+                else if (hasHours)
                     songDurationEnd.Text = GetFormattedTime(durationHours, durationMins, durationSecs);
                 else
                     songDurationEnd.Text = GetFormattedTime(durationMins, durationSecs);

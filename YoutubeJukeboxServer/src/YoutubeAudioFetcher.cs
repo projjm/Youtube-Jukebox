@@ -48,6 +48,7 @@ namespace YoutubeJukeboxServer
         private const string DownloadPath = "TempAudio/";
         private const string ConvertPath = "CachedAudio/";
         private const string CacheFileName = "CacheMetadata.json";
+        private const char hiddenRequestChar = '?';
         private readonly int MaxCacheSizeMb;
         private readonly int SongMaxDurationMinutes;
         private readonly int RequestTimeoutMs;
@@ -86,9 +87,19 @@ namespace YoutubeJukeboxServer
             YoutubeRequest request = new YoutubeRequest();
             request.ids = new List<string>();
             request.successful = false;
+            request.hiddenRequested = false;
 
             VideoId? vid;
             PlaylistId? pid;
+
+            requestString = requestString.Trim();
+            
+            if (requestString[0] == hiddenRequestChar)
+            {
+                request.hiddenRequested = true;
+                requestString = requestString.Substring(1);
+            }
+
             if ((vid = VideoId.TryParse(requestString)) != null)
             {
                 request.ids.Add(vid.Value);

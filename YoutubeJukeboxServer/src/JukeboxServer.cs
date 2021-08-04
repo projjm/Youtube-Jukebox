@@ -27,6 +27,7 @@ namespace YoutubeJukeboxServer
     {
         public bool successful;
         public YTRequestType type;
+        public bool hiddenRequested;
         public List<string> ids;
     }
 
@@ -38,6 +39,7 @@ namespace YoutubeJukeboxServer
         public int durationHours;
         public int durationMinutes;
         public int durationSeconds;
+        public bool hiddenRequested;
 
         public static bool operator == (SongData a, SongData b)
         {
@@ -174,12 +176,14 @@ namespace YoutubeJukeboxServer
                 if (_maxQueueSize >= 0 && _toPlay.Count == _maxQueueSize)
                     return;
 
-                SongData songData = new SongData();
+                SongData songData;
+
                 if (!_audioFetcher.ConvertedFileExists(id))
                     songData = await _audioFetcher.DownloadAndConvertYoutubeAudio(id);
                 else
                     songData = await _audioFetcher.DownloadAndConvertYoutubeAudio(id, true);
 
+                songData.hiddenRequested = request.hiddenRequested;
                 if (songData.queueId == -1)
                 {
                     Console.WriteLine("Failed to queue song.");

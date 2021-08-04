@@ -13,6 +13,7 @@ namespace YoutubeJukebox
         public int durationHours;
         public int durationMinutes;
         public int durationSeconds;
+        public bool hiddenRequested;
     }
 
     class SongDataHandler
