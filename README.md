@@ -9,6 +9,7 @@ A simple standalone app to listen to music in sync with your friends via Youtube
 * Supports videos and playlist links
 * Automatically caches audio for future listens
 * Configurable server resources parameters
+* Queue anonymous songs by prefixing request with '?'
 * Easy to use!
 
 # About
